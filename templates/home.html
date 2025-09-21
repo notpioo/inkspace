@@ -3,92 +3,99 @@
 {% block title %}Home - InkSpace{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-light">Welcome back, {{ user.name }}!</h2>
-            <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
-                <i class="fas fa-share"></i> Publish Note
-            </a>
-        </div>
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-light">Welcome back, {{ user.name }}!</h2>
+        <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
+            <i class="fas fa-share"></i> Publikasikan Catatan
+        </a>
+    </div>
 
-        {% if notes %}
-            <div class="social-feed">
+    {% if notes %}
+        <div class="social-feed-fullwidth">
                 {% for note in notes %}
-                <div class="note-post mb-4">
-                    <div class="post-header d-flex align-items-center mb-3">
-                        <div class="avatar-circle me-3">
-                            {% set author_data = load_users().get(note.author_id, {}) %}
-                            {% if author_data.get('profile_photo') %}
-                                <img src="{{ url_for('get_profile_photo', user_id=note.author_id) }}" 
-                                     alt="{{ note.author_name }}" 
-                                     class="profile-image"
-                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            {% else %}
-                                {{ note.author_name[0].upper() }}
-                            {% endif %}
-                        </div>
-                        <div>
-                            <h6 class="mb-0 text-light">{{ note.author_name }}</h6>
-                            <small class="text-muted">
-                                {% if note.created_at %}
-                                    Posted on {{ note.created_at[:10] + ' ' + note.created_at[11:16] }}
+                <div class="social-post-card">
+                    <div class="post-header">
+                        <div class="user-profile-section">
+                            <div class="user-avatar-modern">
+                                {% set author_data = load_users().get(note.author_id, {}) %}
+                                {% if author_data.get('profile_photo') %}
+                                    <img src="{{ url_for('get_profile_photo', user_id=note.author_id) }}" 
+                                         alt="{{ note.author_name }}" 
+                                         class="profile-image-clean">
                                 {% else %}
-                                    Posted recently
+                                    <div class="avatar-initial">{{ note.author_name[0].upper() }}</div>
                                 {% endif %}
-                            </small>
+                            </div>
+                            <div class="user-details">
+                                <h6 class="author-name">{{ note.author_name }}</h6>
+                                <div class="post-time">
+                                    {% if note.created_at %}
+                                        <i class="far fa-clock"></i>
+                                        {{ note.created_at[:10] + ' • ' + note.created_at[11:16] }}
+                                    {% else %}
+                                        <i class="far fa-clock"></i>
+                                        Baru diposting
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                         {% if note.author_id == session.user_id %}
-                        <div class="ms-auto">
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-outline-light btn-sm" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="{{ url_for('delete_note', note_id=note.id) }}" class="btn btn-outline-danger btn-sm" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
+                        <div class="post-menu-dropdown">
+                            <button class="post-menu-btn" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('edit_note', note_id=note.id) }}">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('delete_note', note_id=note.id) }}">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </a></li>
+                            </ul>
                         </div>
                         {% endif %}
                     </div>
                     
-                    <div class="post-content">
-                        <h5 class="post-title text-light mb-3">{{ note.title }}</h5>
-                        <p class="post-text text-light-muted">{{ note.content }}</p>
+                    <div class="post-content-modern">
+                        <h4 class="post-title-modern">{{ note.title }}</h4>
+                        <div class="post-text-modern">{{ note.content }}</div>
                     </div>
                     
-                    <div class="post-actions mt-3">
-                        <button class="like-btn btn btn-link text-decoration-none p-0" 
-                                data-note-id="{{ note.id }}" 
-                                data-author-id="{{ note.author_id }}"
-                                data-liked="{{ 'true' if session.user_id in note.likes else 'false' }}">
-                            <i class="fas fa-heart {% if session.user_id in note.likes %}text-danger{% else %}text-muted{% endif %}"></i>
-                            <span class="like-text {% if session.user_id in note.likes %}text-danger{% else %}text-muted{% endif %}">
-                                {% if session.user_id in note.likes %}Liked{% else %}Like{% endif %}
-                            </span>
-                        </button>
-                        <span class="like-count text-muted ms-2">{{ note.like_count }} likes</span>
+                    <div class="post-engagement">
+                        <div class="engagement-stats">
+                            <span class="like-count-display">{{ note.like_count }} suka</span>
+                        </div>
+                        
+                        <div class="engagement-actions-single">
+                            <button class="action-btn like-btn-modern" 
+                                    data-note-id="{{ note.id }}" 
+                                    data-author-id="{{ note.author_id }}"
+                                    data-liked="{{ 'true' if session.user_id in note.likes else 'false' }}">
+                                <i class="{% if session.user_id in note.likes %}fas{% else %}far{% endif %} fa-heart"></i>
+                                <span>Suka</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-5x text-muted mb-3"></i>
-                <h3 class="text-light">No posts yet</h3>
-                <p class="text-muted">Be the first to share something with the community!</p>
-                <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
-                    <i class="fas fa-share"></i> Create Your First Post
-                </a>
-            </div>
-        {% endif %}
-    </div>
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-5x text-muted mb-3"></i>
+            <h3 class="text-light">Belum ada postingan</h3>
+            <p class="text-muted">Jadilah yang pertama berbagi dengan komunitas!</p>
+            <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
+                <i class="fas fa-share"></i> Buat Postingan Pertama
+            </a>
+        </div>
+    {% endif %}
 </div>
 
 <script>
-// Like functionality
+// Like functionality for modern UI
 document.addEventListener('DOMContentLoaded', function() {
-    const likeButtons = document.querySelectorAll('.like-btn');
+    const likeButtons = document.querySelectorAll('.like-btn-modern');
     
     likeButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -110,26 +117,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const icon = this.querySelector('i');
-                const text = this.querySelector('.like-text');
-                const countSpan = this.parentElement.querySelector('.like-count');
+                const postCard = this.closest('.social-post-card');
+                const countDisplay = postCard.querySelector('.like-count-display');
                 
                 if (data.liked) {
-                    icon.classList.add('text-danger');
-                    icon.classList.remove('text-muted');
-                    text.classList.add('text-danger');
-                    text.classList.remove('text-muted');
-                    text.textContent = 'Liked';
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    this.classList.add('liked');
                     this.dataset.liked = 'true';
                 } else {
-                    icon.classList.remove('text-danger');
-                    icon.classList.add('text-muted');
-                    text.classList.remove('text-danger');
-                    text.classList.add('text-muted');
-                    text.textContent = 'Like';
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    this.classList.remove('liked');
                     this.dataset.liked = 'false';
                 }
                 
-                countSpan.textContent = `${data.like_count} likes`;
+                countDisplay.textContent = `${data.like_count} suka`;
             })
             .catch(error => {
                 console.error('Error:', error);

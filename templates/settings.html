@@ -7,9 +7,9 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-white fw-bold mb-0">Settings</h2>
+                <h2 class="text-white fw-bold mb-0">Pengaturan</h2>
                 <a href="{{ url_for('profile') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Profile
+                    <i class="fas fa-arrow-left"></i> Kembali ke Profil
                 </a>
             </div>
 
@@ -17,9 +17,9 @@
             <div class="settings-card">
                 <div class="settings-card-header">
                     <h4 class="mb-0">
-                        <i class="fas fa-shield-alt text-warning"></i> Security Settings
+                        <i class="fas fa-shield-alt text-warning"></i> Pengaturan Keamanan
                     </h4>
-                    <p class="text-muted mt-2 mb-0">Manage your app security and privacy settings</p>
+                    <p class="text-muted mt-2 mb-0">Kelola pengaturan keamanan dan privasi aplikasi Anda</p>
                 </div>
                 
                 <div class="settings-card-body">
@@ -31,17 +31,17 @@
                                 App Lock
                             </div>
                             <div class="setting-description">
-                                Add an extra layer of security by requiring a 4-digit PIN after login
+                                Tambahkan lapisan keamanan ekstra dengan memerlukan PIN 4 digit setelah login
                             </div>
                             <div class="setting-status">
                                 Status: 
                                 {% if user.app_lock_enabled %}
                                     <span class="status-active">
-                                        <i class="fas fa-check-circle"></i> Active
+                                        <i class="fas fa-check-circle"></i> Aktif
                                     </span>
                                 {% else %}
                                     <span class="status-inactive">
-                                        <i class="fas fa-times-circle"></i> Inactive
+                                        <i class="fas fa-times-circle"></i> Tidak Aktif
                                     </span>
                                 {% endif %}
                             </div>
@@ -56,9 +56,9 @@
                             <button type="button" class="btn btn-{{ 'danger' if user.app_lock_enabled else 'primary' }}" 
                                     data-bs-toggle="modal" data-bs-target="#appLockModal">
                                 {% if user.app_lock_enabled %}
-                                    <i class="fas fa-unlock"></i> Disable
+                                    <i class="fas fa-unlock"></i> Nonaktifkan
                                 {% else %}
-                                    <i class="fas fa-lock"></i> Enable
+                                    <i class="fas fa-lock"></i> Aktifkan
                                 {% endif %}
                             </button>
                         </div>
@@ -70,9 +70,9 @@
             <div class="settings-card mt-4">
                 <div class="settings-card-header">
                     <h4 class="mb-0">
-                        <i class="fas fa-user-cog text-info"></i> Account Management
+                        <i class="fas fa-user-cog text-info"></i> Manajemen Akun
                     </h4>
-                    <p class="text-muted mt-2 mb-0">Manage your account and session</p>
+                    <p class="text-muted mt-2 mb-0">Kelola akun dan sesi Anda</p>
                 </div>
                 
                 <div class="settings-card-body">
@@ -80,15 +80,15 @@
                         <div class="setting-info">
                             <div class="setting-title">
                                 <i class="fas fa-sign-out-alt text-danger me-2"></i>
-                                Logout
+                                Keluar
                             </div>
                             <div class="setting-description">
-                                Sign out of your account and clear session data
+                                Keluar dari akun Anda dan hapus data sesi
                             </div>
                         </div>
                         <div class="setting-actions">
                             <a href="{{ url_for('logout') }}" class="btn btn-danger">
-                                <i class="fas fa-sign-out-alt"></i> Logout
+                                <i class="fas fa-sign-out-alt"></i> Keluar
                             </a>
                         </div>
                     </div>
@@ -105,9 +105,9 @@
             <div class="modal-header border-secondary">
                 <h5 class="modal-title">
                     {% if user.app_lock_enabled %}
-                        <i class="fas fa-unlock"></i> Disable App Lock
+                        <i class="fas fa-unlock"></i> Nonaktifkan App Lock
                     {% else %}
-                        <i class="fas fa-lock"></i> Enable App Lock
+                        <i class="fas fa-lock"></i> Aktifkan App Lock
                     {% endif %}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -119,31 +119,31 @@
                     {% if not user.app_lock_enabled %}
                         {% if not user.app_lock_pin %}
                             <div class="mb-3">
-                                <label for="app_lock_pin" class="form-label">Enter 4-Digit PIN</label>
+                                <label for="app_lock_pin" class="form-label">Masukkan PIN 4 Digit</label>
                                 <input type="password" class="form-control bg-dark text-white border-secondary" 
                                        id="app_lock_pin" name="app_lock_pin" 
                                        maxlength="4" pattern="[0-9]{4}" required 
-                                       placeholder="Example: 1234">
-                                <div class="form-text text-muted">This PIN will be required every time you open the app.</div>
+                                       placeholder="Contoh: 1234">
+                                <div class="form-text text-muted">PIN ini akan diminta setiap kali Anda membuka aplikasi.</div>
                             </div>
                         {% else %}
-                            <p>Activating App Lock with existing PIN.</p>
+                            <p>Mengaktifkan App Lock dengan PIN yang sudah ada.</p>
                         {% endif %}
                     {% else %}
-                        <p>Are you sure you want to disable App Lock?</p>
+                        <p>Apakah Anda yakin ingin menonaktifkan App Lock?</p>
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            Disabling App Lock will remove the extra security layer from your account.
+                            Menonaktifkan App Lock akan menghapus lapisan keamanan ekstra dari akun Anda.
                         </div>
                     {% endif %}
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-{{ 'danger' if user.app_lock_enabled else 'primary' }}">
                         {% if user.app_lock_enabled %}
-                            <i class="fas fa-unlock"></i> Disable
+                            <i class="fas fa-unlock"></i> Nonaktifkan
                         {% else %}
-                            <i class="fas fa-lock"></i> Enable
+                            <i class="fas fa-lock"></i> Aktifkan
                         {% endif %}
                     </button>
                 </div>
@@ -158,7 +158,7 @@
         <div class="modal-content bg-dark text-white">
             <div class="modal-header border-secondary">
                 <h5 class="modal-title">
-                    <i class="fas fa-edit"></i> Change App Lock PIN
+                    <i class="fas fa-edit"></i> Ubah PIN App Lock
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -167,31 +167,31 @@
                     <input type="hidden" name="action" value="edit_pin">
                     
                     <div class="mb-3">
-                        <label for="current_pin" class="form-label">Current PIN</label>
+                        <label for="current_pin" class="form-label">PIN Saat Ini</label>
                         <input type="password" class="form-control bg-dark text-white border-secondary" 
                                id="current_pin" name="current_pin" 
                                maxlength="4" pattern="[0-9]{4}" required placeholder="••••">
                     </div>
                     
                     <div class="mb-3">
-                        <label for="new_pin" class="form-label">New PIN</label>
+                        <label for="new_pin" class="form-label">PIN Baru</label>
                         <input type="password" class="form-control bg-dark text-white border-secondary" 
                                id="new_pin" name="new_pin" 
                                maxlength="4" pattern="[0-9]{4}" required placeholder="••••">
                     </div>
                     
                     <div class="mb-3">
-                        <label for="confirm_pin" class="form-label">Confirm New PIN</label>
+                        <label for="confirm_pin" class="form-label">Konfirmasi PIN Baru</label>
                         <input type="password" class="form-control bg-dark text-white border-secondary" 
                                id="confirm_pin" name="confirm_pin" 
                                maxlength="4" pattern="[0-9]{4}" required placeholder="••••">
-                        <div class="form-text text-muted">Enter the same PIN to confirm</div>
+                        <div class="form-text text-muted">Masukkan PIN yang sama untuk konfirmasi</div>
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save New PIN
+                        <i class="fas fa-save"></i> Simpan PIN Baru
                     </button>
                 </div>
             </form>

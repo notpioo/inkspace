@@ -13,7 +13,7 @@
                         style="top: 20px; right: 20px;" 
                         data-bs-toggle="modal" 
                         data-bs-target="#editProfileModal">
-                    <i class="fas fa-edit"></i> Edit Profile
+                    <i class="fas fa-edit"></i> Edit Profil
                 </button>
                 
                 <div class="profile-content">
@@ -36,18 +36,18 @@
                     <div class="profile-info">
                         <h2 class="profile-name">{{ user.name }}</h2>
                         <p class="profile-bio">
-                            {{ user.get('bio', 'Passionate writer and avid reader. Exploring the world one word at a time. Join me on my journey through thoughts and stories. ✨') }}
+                            {{ user.get('bio', 'Penulis yang bersemangat dan pembaca yang rajin. Menjelajahi dunia satu kata demi satu kata. Bergabunglah dengan perjalanan saya melalui pikiran dan cerita. ✨') }}
                         </p>
                         
                         <!-- Stats -->
                         <div class="profile-stats">
                             <div class="stat-item">
                                 <div class="stat-number">{{ stats.public_posts }}</div>
-                                <div class="stat-label">Posts</div>
+                                <div class="stat-label">Postingan</div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-number">{{ stats.likes }}</div>
-                                <div class="stat-label">Likes</div>
+                                <div class="stat-label">Suka</div>
                             </div>
                         </div>
                     </div>
@@ -56,30 +56,37 @@
 
             <!-- Your Posts Section -->
             <div class="profile-posts-section">
-                <h3 class="section-title">Your Posts</h3>
+                <h3 class="section-title">Postingan Anda</h3>
                 
                 {% if public_notes and public_notes|length > 0 %}
                     <div class="row g-3">
                         {% for note in public_notes %}
                         <div class="col-lg-4 col-md-6">
                             <div class="public-post-card">
-                                <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-decoration-none">
-                                    <div class="post-preview-content">
+                                <div class="post-preview-content">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
                                         <h6 class="post-preview-title">{{ note.title }}</h6>
-                                        <p class="post-preview-text">
-                                            {{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}
-                                        </p>
-                                        <div class="post-preview-meta">
-                                            <small class="text-muted">
-                                                <i class="fas fa-heart"></i> {{ note.get('likes', [])|length }}
-                                                <span class="ms-2">
-                                                    <i class="fas fa-calendar"></i> 
-                                                    {{ note.created_at[:10] if note.created_at else 'Recently' }}
-                                                </span>
-                                            </small>
-                                        </div>
+                                        <form method="POST" action="{{ url_for('profile') }}" style="display: inline;">
+                                            <input type="hidden" name="action" value="toggle_publish">
+                                            <input type="hidden" name="note_id" value="{{ note.id }}">
+                                            <button type="submit" class="btn btn-outline-warning btn-sm" title="Hapus Publikasi">
+                                                <i class="fas fa-eye-slash"></i>
+                                            </button>
+                                        </form>
                                     </div>
-                                </a>
+                                    <p class="post-preview-text">
+                                        {{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}
+                                    </p>
+                                    <div class="post-preview-meta">
+                                        <small class="text-muted">
+                                            <i class="fas fa-heart"></i> {{ note.get('likes', [])|length }}
+                                            <span class="ms-2">
+                                                <i class="fas fa-calendar"></i> 
+                                                {{ note.created_at[:10] if note.created_at else 'Recently' }}
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -87,10 +94,10 @@
                 {% else %}
                     <div class="empty-posts-state">
                         <i class="fas fa-pencil-alt fa-3x text-muted mb-3"></i>
-                        <h5 class="text-light">No public posts yet</h5>
-                        <p class="text-muted">Share your first story with the community!</p>
+                        <h5 class="text-light">Belum ada postingan publik</h5>
+                        <p class="text-muted">Bagikan cerita pertama Anda dengan komunitas!</p>
                         <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
-                            <i class="fas fa-share"></i> Publish Your First Post
+                            <i class="fas fa-share"></i> Publikasikan Postingan Pertama
                         </a>
                     </div>
                 {% endif %}
@@ -104,26 +111,26 @@
     <div class="modal-dialog">
         <div class="modal-content bg-dark border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title text-light">Edit Profile</h5>
+                <h5 class="modal-title text-light">Edit Profil</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('profile') }}">
                 <input type="hidden" name="action" value="edit_profile">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="profile_name" class="form-label">Name</label>
+                        <label for="profile_name" class="form-label">Nama</label>
                         <input type="text" class="form-control" id="profile_name" name="profile_name" 
                                value="{{ user.name }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="profile_bio" class="form-label">Bio</label>
                         <textarea class="form-control" id="profile_bio" name="profile_bio" rows="3" 
-                                  placeholder="Tell us about yourself...">{{ user.get('bio', '') }}</textarea>
+                                  placeholder="Ceritakan tentang diri Anda...">{{ user.get('bio', '') }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
@@ -135,7 +142,7 @@
     <div class="modal-dialog">
         <div class="modal-content bg-dark border-secondary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title text-light">Change Profile Photo</h5>
+                <h5 class="modal-title text-light">Ganti Foto Profil</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
@@ -144,28 +151,28 @@
                     <div class="text-center mb-4">
                         <div class="profile-picture mx-auto mb-3" style="width: 100px; height: 100px;">
                             {% if user.get('profile_photo') %}
-                                <img src="{{ url_for('get_profile_photo', user_id=session['user_id']) }}" alt="Profile Photo" class="profile-image">
+                                <img src="{{ url_for('get_profile_photo', user_id=session['user_id']) }}" alt="Foto Profil" class="profile-image">
                             {% else %}
                                 {{ user.name[0].upper() }}
                             {% endif %}
                         </div>
-                        <p class="text-muted">Upload a new profile photo</p>
+                        <p class="text-muted">Upload foto profil baru</p>
                     </div>
                     <div class="mb-3">
-                        <label for="profile_photo" class="form-label">Choose Photo</label>
+                        <label for="profile_photo" class="form-label">Pilih Foto</label>
                         <input type="file" class="form-control" id="profile_photo" name="profile_photo" 
                                accept="image/*" required>
-                        <small class="form-text text-muted">Supported formats: JPG, PNG, GIF. Max size: 5MB</small>
+                        <small class="form-text text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal: 5MB</small>
                     </div>
                     <div class="mb-3">
                         <button type="button" class="btn btn-outline-danger btn-sm" onclick="removePhoto()">
-                            <i class="fas fa-trash"></i> Remove Photo
+                            <i class="fas fa-trash"></i> Hapus Foto
                         </button>
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Upload Photo</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Upload Foto</button>
                 </div>
             </form>
         </div>
@@ -179,7 +186,7 @@
 
 <script>
 function removePhoto() {
-    if (confirm('Are you sure you want to remove your profile photo?')) {
+    if (confirm('Apakah Anda yakin ingin menghapus foto profil?')) {
         document.getElementById('removePhotoForm').submit();
     }
 }

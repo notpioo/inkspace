@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import secrets
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SESSION_SECRET', 'fallback-dev-key')
+app.secret_key = os.environ.get('SESSION_SECRET')
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 
 @app.context_processor
@@ -338,7 +338,7 @@ def profile():
             
             # Check file type
             allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-            filename = secure_filename(file.filename)
+            filename = secure_filename(file.filename or '')
             file_ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
             
             if file_ext not in allowed_extensions:
@@ -442,6 +442,21 @@ def profile():
             save_users(users)
             flash('PIN berhasil diubah', 'success')
 
+        elif action == 'toggle_publish':
+            note_id = request.form.get('note_id')
+            if note_id:
+                notes = load_notes()
+                user_notes = notes.get(session['user_id'], [])
+                
+                # Find and unpublish the note
+                for i, note in enumerate(user_notes):
+                    if str(note['id']) == note_id:
+                        user_notes[i]['is_public'] = False
+                        notes[session['user_id']] = user_notes
+                        save_notes(notes)
+                        flash('Catatan berhasil di-unpublish', 'success')
+                        break
+
     # Calculate user statistics
     notes = load_notes()
     user_notes = notes.get(session['user_id'], [])
@@ -491,45 +506,44 @@ def view_note(note_id):
         flash('Catatan tidak ditemukan', 'error')
         return redirect(url_for('index'))
 
-    # Handle relock request
-    if request.method == 'POST':
-        confirm = request.form.get('confirm')
-        if confirm == 'no':
-            # User wants to relock the note
-            if f'note_unlocked_{note_id}' in session:
-                del session[f'note_unlocked_{note_id}']
-            return redirect(url_for('index'))
-
-    # Check if note is locked and user hasn't confirmed
-    if note.get('is_locked') and not session.get(f'note_unlocked_{note_id}'):
-        if request.method == 'POST':
-            confirm = request.form.get('confirm')
-            if confirm == 'yes':
-                # Check PIN if required
-                if note.get('note_pin'):
-                    entered_pin = request.form.get('note_pin', '')
-
-                    if note['note_pin'] == 'use_app_pin':
-                        # Use app lock PIN
-                        if not user or not user.get('app_lock_pin') or not check_password_hash(user['app_lock_pin'], entered_pin):
-                            flash('PIN App Lock salah', 'error')
-                            return render_template('confirm_view.html', note=note, requires_pin=True, pin_type='app')
-                    else:
-                        # Use custom note PIN
-                        if not check_password_hash(note['note_pin'], entered_pin):
-                            flash('PIN catatan salah', 'error')
-                            return render_template('confirm_view.html', note=note, requires_pin=True, pin_type='custom')
-
-                session[f'note_unlocked_{note_id}'] = True
+    # If note is locked, check PIN
+    if note.get('is_locked') and request.method == 'POST':
+        entered_pin = request.form.get('note_pin', '')
+        
+        if note.get('note_pin'):
+            pin_valid = False
+            if note['note_pin'] == 'use_app_pin':
+                # Use app lock PIN
+                if user and user.get('app_lock_pin') and check_password_hash(user['app_lock_pin'], entered_pin):
+                    pin_valid = True
+                else:
+                    flash('PIN App Lock salah', 'error')
             else:
-                return redirect(url_for('index'))
-        else:
-            # Determine if PIN is required and what type
-            requires_pin = bool(note.get('note_pin'))
-            pin_type = 'app' if note.get('note_pin') == 'use_app_pin' else 'custom'
-            return render_template('confirm_view.html', note=note, requires_pin=requires_pin, pin_type=pin_type)
+                # Use custom note PIN
+                if check_password_hash(note['note_pin'], entered_pin):
+                    pin_valid = True
+                else:
+                    flash('PIN catatan salah', 'error')
+            
+            # Only decrypt if PIN is valid
+            if pin_valid:
+                if note.get('encrypted'):
+                    note['content'] = caesar_cipher(note['content'], 3, encrypt=False)
+                return render_template('view_note.html', note=note)
+            else:
+                # PIN invalid, show modal again without decrypting content
+                requires_pin = bool(note.get('note_pin'))
+                pin_type = 'app' if note.get('note_pin') == 'use_app_pin' else 'custom'
+                return render_template('view_note.html', note=note, show_pin_modal=True, requires_pin=requires_pin, pin_type=pin_type)
 
-    # Decrypt note content for display
+    # If note is locked and no POST request (first visit), show PIN modal
+    if note.get('is_locked') and request.method == 'GET':
+        requires_pin = bool(note.get('note_pin'))
+        pin_type = 'app' if note.get('note_pin') == 'use_app_pin' else 'custom'
+        # Don't decrypt content for PIN modal
+        return render_template('view_note.html', note=note, show_pin_modal=True, requires_pin=requires_pin, pin_type=pin_type)
+
+    # Note is unlocked, decrypt and show
     if note.get('encrypted'):
         note['content'] = caesar_cipher(note['content'], 3, encrypt=False)
 
@@ -565,34 +579,42 @@ def edit_note(note_id):
 
     # Check if note is locked and requires PIN verification
     if note.get('is_locked') and not session.get(f'edit_note_unlocked_{note_id}'):
-        if request.method == 'POST':
-            action = request.form.get('action')
-
-            if action == 'verify_pin':
-                entered_pin = request.form.get('note_pin', '')
-
-                if note.get('note_pin'):
-                    if note['note_pin'] == 'use_app_pin':
-                        # Use app lock PIN
-                        if not user or not user.get('app_lock_pin') or not check_password_hash(user['app_lock_pin'], entered_pin):
-                            flash('PIN App Lock salah', 'error')
-                            return render_template('verify_edit_pin.html', note=note, pin_type='app')
+        if request.method == 'POST' and 'note_pin' in request.form:
+            entered_pin = request.form.get('note_pin', '')
+            
+            if note.get('note_pin'):
+                pin_valid = False
+                if note['note_pin'] == 'use_app_pin':
+                    # Use app lock PIN
+                    if user and user.get('app_lock_pin') and check_password_hash(user['app_lock_pin'], entered_pin):
+                        pin_valid = True
                     else:
-                        # Use custom note PIN
-                        if not check_password_hash(note['note_pin'], entered_pin):
-                            flash('PIN catatan salah', 'error')
-                            return render_template('verify_edit_pin.html', note=note, pin_type='custom')
-
-                    session[f'edit_note_unlocked_{note_id}'] = True
+                        flash('PIN App Lock salah', 'error')
                 else:
+                    # Use custom note PIN
+                    if check_password_hash(note['note_pin'], entered_pin):
+                        pin_valid = True
+                    else:
+                        flash('PIN catatan salah', 'error')
+                
+                # Only proceed if PIN is valid
+                if pin_valid:
                     session[f'edit_note_unlocked_{note_id}'] = True
-            else:
-                return redirect(url_for('index'))
-        else:
-            # Determine PIN type
-            pin_type = 'app' if note.get('note_pin') == 'use_app_pin' else 'custom'
+                    # Decrypt note content for editing
+                    if note.get('encrypted'):
+                        note['content'] = caesar_cipher(note['content'], 3, encrypt=False)
+                    return render_template('edit_note.html', note=note, user=user)
+                else:
+                    # PIN invalid, show modal again
+                    requires_pin = bool(note.get('note_pin'))
+                    pin_type = 'app' if note.get('note_pin') == 'use_app_pin' else 'custom'
+                    return render_template('edit_note.html', note=note, user=user, show_pin_modal=True, requires_pin=requires_pin, pin_type=pin_type)
+
+        # First visit to locked note, show PIN modal
+        if request.method == 'GET':
             requires_pin = bool(note.get('note_pin'))
-            return render_template('verify_edit_pin.html', note=note, pin_type=pin_type, requires_pin=requires_pin)
+            pin_type = 'app' if note.get('note_pin') == 'use_app_pin' else 'custom'
+            return render_template('edit_note.html', note=note, user=user, show_pin_modal=True, requires_pin=requires_pin, pin_type=pin_type)
 
     # Handle form submission for editing
     if request.method == 'POST' and request.form.get('action') == 'update':
@@ -848,23 +870,28 @@ def publish_notes():
     if request.method == 'POST':
         selected_note_ids = request.form.getlist('selected_notes')
         if selected_note_ids:
-            # Update selected notes to be public
+            # Validate that selected notes are not locked
+            valid_ids = []
             for i, note in enumerate(user_notes):
                 if str(note['id']) in selected_note_ids:
-                    user_notes[i]['is_public'] = True
+                    if note.get('is_locked', False):
+                        flash(f'Catatan "{note["title"]}" tidak dapat dipublikasikan karena masih terkunci', 'error')
+                    else:
+                        user_notes[i]['is_public'] = True
+                        valid_ids.append(str(note['id']))
             
-            notes[session['user_id']] = user_notes
-            save_notes(notes)
-            
-            flash(f'{len(selected_note_ids)} catatan berhasil dipublikasikan!', 'success')
-            return redirect(url_for('index'))
+            if valid_ids:
+                notes[session['user_id']] = user_notes
+                save_notes(notes)
+                flash(f'{len(valid_ids)} catatan berhasil dipublikasikan!', 'success')
+                return redirect(url_for('index'))
         else:
             flash('Pilih minimal satu catatan untuk dipublikasikan', 'error')
 
-    # Get unpublished notes (not public)
+    # Get unpublished notes (not public and not locked)
     unpublished_notes = []
     for note in user_notes:
-        if not note.get('is_public', False):
+        if not note.get('is_public', False) and not note.get('is_locked', False):
             # Decrypt content for display
             decrypted_note = note.copy()
             if decrypted_note.get('encrypted'):

@@ -28,26 +28,99 @@
                     </small>
                 </div>
                 
-                <div class="note-content">
-                    <p style="white-space: pre-wrap; line-height: 1.6;">{{ note.content }}</p>
-                </div>
+                {% if show_pin_modal %}
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-lock fa-2x mb-2"></i>
+                        <p class="mb-0">Catatan ini terkunci. Masukkan PIN untuk membuka.</p>
+                    </div>
+                {% else %}
+                    <div class="note-content">
+                        <p style="white-space: pre-wrap; line-height: 1.6;">{{ note.content }}</p>
+                    </div>
+                {% endif %}
             </div>
             <div class="card-footer bg-transparent">
                 <div class="d-flex justify-content-between">
                     <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Kembali ke Home
+                        <i class="fas fa-arrow-left"></i> Kembali ke Beranda
                     </a>
-                    {% if note.is_locked %}
-                    <form method="POST" style="display: inline;">
-                        <input type="hidden" name="confirm" value="no">
-                        <button type="submit" class="btn btn-outline-warning">
-                            <i class="fas fa-lock"></i> Kunci Lagi
-                        </button>
-                    </form>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- PIN Modal -->
+{% if show_pin_modal %}
+<div class="modal fade" id="pinModal" tabindex="-1" aria-labelledby="pinModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pinModalLabel">
+                    <i class="fas fa-lock"></i> Masukkan PIN
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="window.location.href='{{ url_for('index') }}';"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body text-center">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    {% if requires_pin %}
+                    <div class="mb-3">
+                        <input type="password" class="form-control form-control-lg text-center" 
+                               id="note_pin" name="note_pin" maxlength="4" pattern="[0-9]{4}" required 
+                               placeholder="••••" style="letter-spacing: 1rem;" autofocus>
+                        <small class="text-muted">
+                            {% if pin_type == 'app' %}
+                                PIN App Lock
+                            {% else %}
+                                PIN Catatan
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-unlock"></i> Buka
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show modal automatically when page loads
+    var pinModal = new bootstrap.Modal(document.getElementById('pinModal'));
+    pinModal.show();
+    
+    // Handle modal dismiss - redirect to home
+    document.getElementById('pinModal').addEventListener('hidden.bs.modal', function() {
+        window.location.href = '{{ url_for('index') }}';
+    });
+    
+    // Auto-submit when 4 digits are entered
+    const pinInput = document.getElementById('note_pin');
+    if (pinInput) {
+        pinInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length === 4) {
+                this.form.submit();
+            }
+        });
+    }
+});
+</script>
+{% endif %}
 {% endblock %}

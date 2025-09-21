@@ -342,6 +342,7 @@ textarea.form-control {
     color: #fff;
     padding: 1rem;
     margin-bottom: 1rem;
+    font-size: 0.9rem;
 }
 
 .alert-success {
@@ -664,6 +665,289 @@ textarea.form-control {
 
 .notes-selection::-webkit-scrollbar-thumb:hover {
     background: #c2185b;
+}
+
+/* Modern Social Post Styling */
+.social-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.social-feed-fullwidth {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.social-post-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.social-post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-color: rgba(233, 30, 99, 0.2);
+}
+
+/* Post Header */
+.post-header {
+    padding: 1.25rem 1.5rem 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar-modern {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+/* Profile Image Clean - No Background */
+.profile-image-clean {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: transparent !important;
+}
+
+.avatar-initial {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e91e63, #c2185b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.author-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.post-time {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.post-time i {
+    font-size: 0.75rem;
+}
+
+/* Post Menu */
+.post-menu-dropdown {
+    position: relative;
+}
+
+.post-menu-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.post-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Post Content */
+.post-content-modern {
+    padding: 1.25rem 1.5rem;
+}
+
+.post-title-modern {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    margin: 0 0 1rem 0;
+}
+
+.post-text-modern {
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+    font-size: 0.95rem;
+    margin: 0;
+    word-break: break-word;
+}
+
+/* Post Engagement */
+.post-engagement {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1.5rem 1.25rem 1.5rem;
+}
+
+.engagement-stats {
+    padding-bottom: 0.75rem;
+}
+
+.like-count-display {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.engagement-actions {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.engagement-actions-single {
+    display: flex;
+    justify-content: flex-start;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    flex: 1;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.like-btn-modern.liked {
+    color: #e91e63 !important;
+}
+
+.like-btn-modern.liked i {
+    color: #e91e63 !important;
+}
+
+.action-btn i {
+    font-size: 1rem;
+}
+
+/* Navbar Profile Image Fix */
+.navbar .profile-image {
+    background: transparent !important;
+}
+
+/* Profile page avatar fix */
+.profile-picture .profile-image {
+    background: transparent !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .social-feed,
+    .social-feed-fullwidth {
+        max-width: 100%;
+        margin: 0 -15px;
+    }
+    
+    .social-post-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .post-header,
+    .post-content-modern,
+    .post-engagement {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .engagement-actions {
+        gap: 0;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-avatar-modern,
+    .profile-image-clean,
+    .avatar-initial {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .author-name {
+        font-size: 0.95rem;
+    }
+    
+    .post-time {
+        font-size: 0.8rem;
+    }
+    
+    .action-btn span {
+        display: none;
+    }
+    
+    .action-btn {
+        justify-content: center;
+        padding: 0.75rem;
+    }
 }
 
 /* Profile Page Styling */
