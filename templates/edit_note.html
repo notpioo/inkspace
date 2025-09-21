@@ -1,0 +1,144 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Catatan - Catatan Harian{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h3 class="mb-0">
+                    <i class="fas fa-edit"></i> Edit Catatan
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editNoteForm">
+                    <input type="hidden" name="action" value="update">
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Judul Catatan</label>
+                        <input type="text" class="form-control" id="title" name="title" required 
+                               value="{{ note.title }}" placeholder="Masukkan judul catatan...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Isi Catatan</label>
+                        <textarea class="form-control" id="content" name="content" rows="8" required 
+                                  placeholder="Tulis catatan Anda di sini...">{{ note.content }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_locked" name="is_locked" 
+                                   {% if note.is_locked %}checked{% endif %}>
+                            <label class="form-check-label" for="is_locked">
+                                <i class="fas fa-lock"></i> Kunci catatan ini (memerlukan konfirmasi untuk dibaca)
+                            </label>
+                        </div>
+                        
+                        <!-- PIN Options -->
+                        <div id="pinOptions" class="mt-3" style="display: {% if note.is_locked %}block{% else %}none{% endif %};">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title text-warning">
+                                        <i class="fas fa-key"></i> Opsi Kunci Catatan
+                                    </h6>
+                                    
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="pin_option" id="keep_existing_pin" value="keep_existing" 
+                                               {% if note.note_pin %}checked{% endif %}>
+                                        <label class="form-check-label" for="keep_existing_pin">
+                                            Gunakan PIN yang sudah ada
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="pin_option" id="use_app_pin_edit" value="app_pin"
+                                               {% if not note.note_pin %}checked{% endif %}>
+                                        <label class="form-check-label" for="use_app_pin_edit">
+                                            Gunakan PIN App Lock (jika ada)
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="pin_option" id="use_custom_pin_edit" value="custom_pin">
+                                        <label class="form-check-label" for="use_custom_pin_edit">
+                                            Buat PIN baru untuk catatan ini
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Custom PIN Input -->
+                                    <div id="customPinInputEdit" style="display: none;">
+                                        <label for="note_pin" class="form-label">PIN Catatan Baru (4 digit)</label>
+                                        <input type="password" class="form-control" id="note_pin" name="note_pin" 
+                                               maxlength="4" pattern="[0-9]{4}" placeholder="Masukkan 4 digit PIN">
+                                        <div class="form-text">PIN ini akan mengganti PIN yang lama</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Batal
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Perbarui Catatan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isLockedCheckbox = document.getElementById('is_locked');
+    const pinOptions = document.getElementById('pinOptions');
+    const useCustomPinRadio = document.getElementById('use_custom_pin_edit');
+    const customPinInput = document.getElementById('customPinInputEdit');
+    const notePinField = document.getElementById('note_pin');
+    
+    // Toggle PIN options when lock checkbox is changed
+    isLockedCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            pinOptions.style.display = 'block';
+        } else {
+            pinOptions.style.display = 'none';
+            customPinInput.style.display = 'none';
+            if (notePinField) notePinField.required = false;
+        }
+    });
+    
+    // Toggle custom PIN input when radio is changed
+    const pinOptionRadios = document.querySelectorAll('input[name="pin_option"]');
+    pinOptionRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'custom_pin') {
+                customPinInput.style.display = 'block';
+                notePinField.required = true;
+            } else {
+                customPinInput.style.display = 'none';
+                notePinField.required = false;
+            }
+        });
+    });
+    
+    // Validate PIN input (numbers only)
+    if (notePinField) {
+        notePinField.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        
+        notePinField.addEventListener('keypress', function(e) {
+            if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Publish Notes - InkSpace{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold mb-0">Publish Notes</h2>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
+
+    {% if notes %}
+        <div class="publish-form-card">
+            <div class="mb-4">
+                <h5 class="text-white mb-3">
+                    <i class="fas fa-share"></i> Pilih catatan yang ingin dipublikasikan
+                </h5>
+                <p class="text-muted">Catatan yang dipublikasikan akan terlihat oleh semua pengguna di halaman utama.</p>
+            </div>
+
+            <form method="POST">
+                <div class="notes-selection mb-4">
+                    {% for note in notes %}
+                    <div class="note-selection-card mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input note-checkbox" type="checkbox" name="selected_notes"
+                                   value="{{ note.id }}" id="note_{{ note.id }}">
+                            <label class="form-check-label w-100" for="note_{{ note.id }}">
+                                <div class="note-selection-content">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="note-title text-white mb-1">{{ note.title }}</h6>
+                                        <div class="d-flex gap-2">
+                                            {% if note.is_locked %}
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-lock"></i> Locked
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <p class="note-preview text-muted mb-2">
+                                        {{ note.content[:150] }}{% if note.content|length > 150 %}...{% endif %}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        {% if note.created_at %}
+                                            {{ note.created_at[:10].replace('-', '/') }}
+                                        {% else %}
+                                            Date not available
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <button type="button" class="btn btn-outline-light btn-sm" id="selectAll">
+                            <i class="fas fa-check-double"></i> Pilih Semua
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-sm ms-2" id="deselectAll">
+                            <i class="fas fa-times"></i> Batal Pilih Semua
+                        </button>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-times"></i> Batal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-share"></i> Publikasikan
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-file-alt fa-4x mb-3"></i>
+            <h3>Tidak Ada Catatan Untuk Dipublikasikan</h3>
+            <p class="mb-4">Semua catatan Anda sudah dipublikasikan atau Anda belum membuat catatan.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllBtn = document.getElementById('selectAll');
+    const deselectAllBtn = document.getElementById('deselectAll');
+    const checkboxes = document.querySelectorAll('.note-checkbox');
+
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        });
+    }
+
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        });
+    }
+});
+</script>
+{% endblock %}

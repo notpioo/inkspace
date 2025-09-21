@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - InkSpace{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white fw-bold mb-0">Settings</h2>
+                <a href="{{ url_for('profile') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Profile
+                </a>
+            </div>
+
+            <!-- Security Settings Card -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt text-warning"></i> Security Settings
+                    </h4>
+                    <p class="text-muted mt-2 mb-0">Manage your app security and privacy settings</p>
+                </div>
+                
+                <div class="settings-card-body">
+                    <!-- App Lock Setting -->
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-title">
+                                <i class="fas fa-lock text-warning me-2"></i>
+                                App Lock
+                            </div>
+                            <div class="setting-description">
+                                Add an extra layer of security by requiring a 4-digit PIN after login
+                            </div>
+                            <div class="setting-status">
+                                Status: 
+                                {% if user.app_lock_enabled %}
+                                    <span class="status-active">
+                                        <i class="fas fa-check-circle"></i> Active
+                                    </span>
+                                {% else %}
+                                    <span class="status-inactive">
+                                        <i class="fas fa-times-circle"></i> Inactive
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            {% if user.app_lock_enabled and user.app_lock_pin %}
+                                <button type="button" class="btn btn-outline-light btn-sm me-2" 
+                                        data-bs-toggle="modal" data-bs-target="#editPinModal">
+                                    <i class="fas fa-edit"></i> Edit PIN
+                                </button>
+                            {% endif %}
+                            <button type="button" class="btn btn-{{ 'danger' if user.app_lock_enabled else 'primary' }}" 
+                                    data-bs-toggle="modal" data-bs-target="#appLockModal">
+                                {% if user.app_lock_enabled %}
+                                    <i class="fas fa-unlock"></i> Disable
+                                {% else %}
+                                    <i class="fas fa-lock"></i> Enable
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Management Card -->
+            <div class="settings-card mt-4">
+                <div class="settings-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-cog text-info"></i> Account Management
+                    </h4>
+                    <p class="text-muted mt-2 mb-0">Manage your account and session</p>
+                </div>
+                
+                <div class="settings-card-body">
+                    <div class="setting-item border-0">
+                        <div class="setting-info">
+                            <div class="setting-title">
+                                <i class="fas fa-sign-out-alt text-danger me-2"></i>
+                                Logout
+                            </div>
+                            <div class="setting-description">
+                                Sign out of your account and clear session data
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            <a href="{{ url_for('logout') }}" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- App Lock Modal -->
+<div class="modal fade" id="appLockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">
+                    {% if user.app_lock_enabled %}
+                        <i class="fas fa-unlock"></i> Disable App Lock
+                    {% else %}
+                        <i class="fas fa-lock"></i> Enable App Lock
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="toggle_app_lock">
+                    
+                    {% if not user.app_lock_enabled %}
+                        {% if not user.app_lock_pin %}
+                            <div class="mb-3">
+                                <label for="app_lock_pin" class="form-label">Enter 4-Digit PIN</label>
+                                <input type="password" class="form-control bg-dark text-white border-secondary" 
+                                       id="app_lock_pin" name="app_lock_pin" 
+                                       maxlength="4" pattern="[0-9]{4}" required 
+                                       placeholder="Example: 1234">
+                                <div class="form-text text-muted">This PIN will be required every time you open the app.</div>
+                            </div>
+                        {% else %}
+                            <p>Activating App Lock with existing PIN.</p>
+                        {% endif %}
+                    {% else %}
+                        <p>Are you sure you want to disable App Lock?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Disabling App Lock will remove the extra security layer from your account.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-{{ 'danger' if user.app_lock_enabled else 'primary' }}">
+                        {% if user.app_lock_enabled %}
+                            <i class="fas fa-unlock"></i> Disable
+                        {% else %}
+                            <i class="fas fa-lock"></i> Enable
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit PIN Modal -->
+<div class="modal fade" id="editPinModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i> Change App Lock PIN
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="edit_pin">
+                    
+                    <div class="mb-3">
+                        <label for="current_pin" class="form-label">Current PIN</label>
+                        <input type="password" class="form-control bg-dark text-white border-secondary" 
+                               id="current_pin" name="current_pin" 
+                               maxlength="4" pattern="[0-9]{4}" required placeholder="••••">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_pin" class="form-label">New PIN</label>
+                        <input type="password" class="form-control bg-dark text-white border-secondary" 
+                               id="new_pin" name="new_pin" 
+                               maxlength="4" pattern="[0-9]{4}" required placeholder="••••">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_pin" class="form-label">Confirm New PIN</label>
+                        <input type="password" class="form-control bg-dark text-white border-secondary" 
+                               id="confirm_pin" name="confirm_pin" 
+                               maxlength="4" pattern="[0-9]{4}" required placeholder="••••">
+                        <div class="form-text text-muted">Enter the same PIN to confirm</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save New PIN
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

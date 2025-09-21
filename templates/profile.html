@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - InkSpace{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Profile Header Card -->
+            <div class="profile-header-card position-relative">
+                <!-- Edit Profile Button -->
+                <button class="btn btn-outline-light btn-sm position-absolute" 
+                        style="top: 20px; right: 20px;" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#editProfileModal">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+                
+                <div class="profile-content">
+                    <!-- Profile Picture -->
+                    <div class="profile-picture-container position-relative">
+                        <div class="profile-picture">
+                            {% if user.get('profile_photo') %}
+                                <img src="{{ url_for('get_profile_photo', user_id=session['user_id']) }}" alt="Profile Photo" class="profile-image">
+                            {% else %}
+                                {{ user.name[0].upper() }}
+                            {% endif %}
+                        </div>
+                        <!-- Edit Photo Icon -->
+                        <button class="profile-photo-edit-btn" data-bs-toggle="modal" data-bs-target="#editPhotoModal">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Profile Info -->
+                    <div class="profile-info">
+                        <h2 class="profile-name">{{ user.name }}</h2>
+                        <p class="profile-bio">
+                            {{ user.get('bio', 'Passionate writer and avid reader. Exploring the world one word at a time. Join me on my journey through thoughts and stories. ✨') }}
+                        </p>
+                        
+                        <!-- Stats -->
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ stats.public_posts }}</div>
+                                <div class="stat-label">Posts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ stats.likes }}</div>
+                                <div class="stat-label">Likes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Your Posts Section -->
+            <div class="profile-posts-section">
+                <h3 class="section-title">Your Posts</h3>
+                
+                {% if public_notes and public_notes|length > 0 %}
+                    <div class="row g-3">
+                        {% for note in public_notes %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="public-post-card">
+                                <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-decoration-none">
+                                    <div class="post-preview-content">
+                                        <h6 class="post-preview-title">{{ note.title }}</h6>
+                                        <p class="post-preview-text">
+                                            {{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}
+                                        </p>
+                                        <div class="post-preview-meta">
+                                            <small class="text-muted">
+                                                <i class="fas fa-heart"></i> {{ note.get('likes', [])|length }}
+                                                <span class="ms-2">
+                                                    <i class="fas fa-calendar"></i> 
+                                                    {{ note.created_at[:10] if note.created_at else 'Recently' }}
+                                                </span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-posts-state">
+                        <i class="fas fa-pencil-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-light">No public posts yet</h5>
+                        <p class="text-muted">Share your first story with the community!</p>
+                        <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
+                            <i class="fas fa-share"></i> Publish Your First Post
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light">Edit Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('profile') }}">
+                <input type="hidden" name="action" value="edit_profile">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="profile_name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="profile_name" name="profile_name" 
+                               value="{{ user.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile_bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="profile_bio" name="profile_bio" rows="3" 
+                                  placeholder="Tell us about yourself...">{{ user.get('bio', '') }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Photo Modal -->
+<div class="modal fade" id="editPhotoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light">Change Profile Photo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="upload_photo">
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="profile-picture mx-auto mb-3" style="width: 100px; height: 100px;">
+                            {% if user.get('profile_photo') %}
+                                <img src="{{ url_for('get_profile_photo', user_id=session['user_id']) }}" alt="Profile Photo" class="profile-image">
+                            {% else %}
+                                {{ user.name[0].upper() }}
+                            {% endif %}
+                        </div>
+                        <p class="text-muted">Upload a new profile photo</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile_photo" class="form-label">Choose Photo</label>
+                        <input type="file" class="form-control" id="profile_photo" name="profile_photo" 
+                               accept="image/*" required>
+                        <small class="form-text text-muted">Supported formats: JPG, PNG, GIF. Max size: 5MB</small>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removePhoto()">
+                            <i class="fas fa-trash"></i> Remove Photo
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload Photo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Photo Form (hidden) -->
+<form id="removePhotoForm" method="POST" action="{{ url_for('profile') }}" style="display: none;">
+    <input type="hidden" name="action" value="remove_photo">
+</form>
+
+<script>
+function removePhoto() {
+    if (confirm('Are you sure you want to remove your profile photo?')) {
+        document.getElementById('removePhotoForm').submit();
+    }
+}
+</script>
+{% endblock %}

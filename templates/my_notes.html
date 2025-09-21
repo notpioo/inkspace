@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Notes - InkSpace{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold mb-0">My Notes</h2>
+        <a href="#" class="publish-note-btn" data-bs-toggle="modal" data-bs-target="#noteModal">
+            <i class="fas fa-plus"></i> New Note
+        </a>
+    </div>
+
+    {% if notes %}
+        <div class="row g-4">
+            {% for note in notes %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="note-card h-100 position-relative">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex gap-2">
+                            {% if note.is_locked %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-lock"></i> Locked
+                                </span>
+                            {% endif %}
+                            {% if note.get('is_public', False) %}
+                                <span class="badge bg-info">
+                                    <i class="fas fa-globe"></i> Public
+                                </span>
+                            {% endif %}
+                        </div>
+                        <!-- Action buttons moved to top right corner -->
+                        <div class="note-actions-top d-flex gap-1">
+                            <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-sm btn-outline-light" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('delete_note', note_id=note.id) }}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-decoration-none">
+                        <h5 class="note-title text-white mb-3 clickable-title">{{ note.title }}</h5>
+
+                        <p class="note-preview text-light-muted mb-4">
+                            {% if note.is_locked %}
+                                <em>
+                                    <i class="fas fa-lock"></i> {{ note.content_preview or 'This note is locked. Click to open.' }}
+                                </em>
+                            {% else %}
+                                {{ note.content[:120] }}{% if note.content|length > 120 %}...{% endif %}
+                            {% endif %}
+                        </p>
+                    </a>
+
+                    <div class="note-footer mt-auto">
+                        <small class="text-muted">
+                            {% if note.created_at %}
+                                {{ note.created_at[:10].replace('-', '/') }}
+                            {% else %}
+                                Date not available
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+                <i class="fas fa-book fa-4x mb-3"></i>
+                <h3>No Notes Yet</h3>
+                <p class="mb-4">Start writing your personal notes!</p>
+            </div>
+    {% endif %}
+</div>
+{% endblock %}

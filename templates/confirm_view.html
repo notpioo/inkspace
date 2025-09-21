@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Konfirmasi Akses - Catatan Harian{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-lock fa-4x text-warning mb-3"></i>
+                    <h3>Catatan Terkunci</h3>
+                    <p class="text-muted">Catatan "{{ note.title }}" dilindungi dengan privacy lock.</p>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Peringatan:</strong> Catatan ini ditandai sebagai pribadi. Apakah Anda yakin ingin membacanya?
+                </div>
+
+                <form method="POST">
+                    {% if requires_pin %}
+                    <div class="mb-3">
+                        <label for="note_pin" class="form-label">
+                            {% if pin_type == 'app' %}
+                                Masukkan PIN App Lock
+                            {% else %}
+                                Masukkan PIN Catatan
+                            {% endif %}
+                        </label>
+                        <input type="password" class="form-control form-control-lg text-center" 
+                               id="note_pin" name="note_pin" maxlength="4" pattern="[0-9]{4}" required 
+                               placeholder="••••" style="letter-spacing: 1rem;">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="confirm" value="yes" class="btn btn-primary">
+                            <i class="fas fa-unlock"></i> Ya, Buka Catatan
+                        </button>
+                        <button type="submit" name="confirm" value="no" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Tidak, Kembali
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
