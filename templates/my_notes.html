@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}My Notes - InkSpace{% endblock %}
+{% block title %}Catatan - InkSpace{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-white fw-bold mb-0">Catatan Saya</h2>
-        <a href="#" class="publish-note-btn" data-bs-toggle="modal" data-bs-target="#noteModal">
-            <i class="fas fa-plus"></i> Catatan Baru
-        </a>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title mb-1">Catatan Saya</h1>
+        <p class="page-subtitle text-muted mb-0">
+            {% if notes %}{{ notes|length }} catatan tersimpan{% else %}Belum ada catatan{% endif %}
+        </p>
     </div>
+</div>
 
     {% if notes %}
         <div class="row g-4">

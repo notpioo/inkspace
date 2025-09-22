@@ -2,16 +2,31 @@
 
 {% block title %}Home - InkSpace{% endblock %}
 
-{% block content %}
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-light">Welcome back, {{ user.name }}!</h2>
-        <a href="{{ url_for('publish_notes') }}" class="publish-note-btn">
-            <i class="fas fa-share"></i> Publikasikan Catatan
-        </a>
-    </div>
+{% block page_header %}
+{% set current_user = {} %}
+{% for user_id, user_data in (load_users() or {}).items() %}
+    {% if user_id == session['user_id'] %}
+        {% set _ = current_user.update(user_data) %}
+    {% endif %}
+{% endfor %}
+<h1 class="text-white fw-bold mb-0">Welcome back, {{ current_user.get('name', 'User') }}!</h1>
+{% endblock %}
 
-    {% if notes %}
+{% block content %}
+<div class="welcome-section d-block d-lg-none mb-4">
+    <div class="welcome-header">
+        {% set current_user = {} %}
+        {% for user_id, user_data in (load_users() or {}).items() %}
+            {% if user_id == session['user_id'] %}
+                {% set _ = current_user.update(user_data) %}
+            {% endif %}
+        {% endfor %}
+        <h1 class="welcome-title">Selamat datang, {{ current_user.get('name', 'User') }}!</h1>
+        <p class="welcome-subtitle">Lihat postingan terbaru dari komunitas</p>
+    </div>
+</div>
+
+{% if notes %}
         <div class="social-feed-fullwidth">
                 {% for note in notes %}
                 <div class="social-post-card">
@@ -106,8 +121,10 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`/like_note/${noteId}/${authorId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                }
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                },
+                body: `csrf_token=${encodeURIComponent(document.querySelector('meta[name=csrf-token]').getAttribute('content'))}`
             })
             .then(response => response.json())
             .then(data => {

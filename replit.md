@@ -60,9 +60,21 @@ Preferred communication style: Simple, everyday language.
 ### Backend Dependencies
 - **Flask**: Core web framework for Python
 - **Werkzeug**: Password hashing and security utilities
+- **Gunicorn**: Production WSGI server for deployment
 - **Python Standard Library**: JSON handling, datetime operations, file I/O, and session management
 
 ### Development Environment
-- **Session Management**: Environment variable configuration for session secrets
+- **Session Management**: Environment variable configuration for session secrets (SESSION_SECRET)
 - **File System**: Local file storage for JSON databases and static assets
 - **Static Assets**: CSS and JavaScript files served through Flask's static file handling
+- **Replit Configuration**: ProxyFix middleware configured for proper HTTPS URL generation in Replit environment
+
+## Recent Changes (September 21, 2025)
+
+### Project Import and Setup
+- Successfully imported GitHub repository to Replit environment
+- Installed required Python dependencies: flask, werkzeug, gunicorn
+- Configured Flask app with ProxyFix middleware for Replit proxy compatibility
+- Set up workflow to serve on port 5000 with webview output
+- Configured deployment settings for autoscale deployment target
+- Verified application functionality with existing user data and notes

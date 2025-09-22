@@ -12,6 +12,7 @@
     </div>
 
     <form method="POST" id="loginForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <div class="input-group">
@@ -33,10 +34,27 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 mb-3">
+        <button type="submit" class="btn btn-primary w-100 mb-3" id="loginBtn">
             <i class="fas fa-sign-in-alt"></i> Masuk
         </button>
     </form>
+
+    <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (!email || !password) {
+            e.preventDefault();
+            alert('Mohon isi email dan password');
+            return;
+        }
+        
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    });
+    </script>
 
     <div class="text-center">
         <p class="text-muted">Belum punya akun? <a href="{{ url_for('register') }}" class="text-decoration-none" style="color: #e91e63;">Buat akun di sini</a></p>

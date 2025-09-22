@@ -6,16 +6,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
+from flask_wtf.csrf import CSRFProtect
 import secrets
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET')
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 
+# Enable CSRF protection
+csrf = CSRFProtect(app)
+
 @app.context_processor
 def inject_user_data():
+    from flask_wtf.csrf import generate_csrf
     return {
-        'load_users': load_users
+        'load_users': load_users,
+        'csrf_token': generate_csrf
     }
 
 # Database file paths
@@ -137,17 +143,24 @@ def index():
 def login():
     """User login"""
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        try:
+            email = request.form.get('email', '').strip()
+            password = request.form.get('password', '')
 
-        users = load_users()
-        for user_id, user in users.items():
-            if user['email'] == email and check_password_hash(user['password'], password):
-                session['user_id'] = user_id
-                session['app_unlocked'] = not user.get('app_lock_enabled', False)
-                return redirect(url_for('index'))
+            if not email or not password:
+                flash('Email dan password harus diisi', 'error')
+                return render_template('login.html')
 
-        flash('Email atau password salah', 'error')
+            users = load_users()
+            for user_id, user in users.items():
+                if user['email'] == email and check_password_hash(user['password'], password):
+                    session['user_id'] = user_id
+                    session['app_unlocked'] = not user.get('app_lock_enabled', False)
+                    return redirect(url_for('index'))
+
+            flash('Email atau password salah', 'error')
+        except Exception as e:
+            flash('Terjadi kesalahan saat login. Silakan coba lagi.', 'error')
 
     return render_template('login.html')
 
@@ -987,6 +1000,26 @@ def settings():
             flash('PIN berhasil diubah', 'success')
 
     return render_template('settings.html', user=user)
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Handle bad request errors"""
+    return render_template('login.html'), 400
+
+@app.errorhandler(404)
+def not_found(error):
+    """Handle not found errors"""
+    if 'user_id' in session:
+        return redirect(url_for('index'))
+    return redirect(url_for('login'))
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle internal server errors"""
+    flash('Terjadi kesalahan internal. Silakan coba lagi.', 'error')
+    if 'user_id' in session:
+        return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     init_database()
